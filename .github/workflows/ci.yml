@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
@@ -31,8 +31,8 @@ jobs:
               CXX: g++-5
               package: g++-5
               repos:
-              - '"deb http://us.archive.ubuntu.com/ubuntu/ bionic main"'
-              - '"deb http://us.archive.ubuntu.com/ubuntu/ bionic universe"'
+                - '"deb http://us.archive.ubuntu.com/ubuntu/ bionic main"'
+                - '"deb http://us.archive.ubuntu.com/ubuntu/ bionic universe"'
           # Clang 7
           - os: ubuntu-20.04
             python: python3.8
@@ -83,10 +83,10 @@ jobs:
 
       - name: Install general build dependencies
         run: |
-            sudo apt-get install -y \
-              doxygen \
-              libgmp-dev \
-              pandoc
+          sudo apt-get install -y \
+            doxygen \
+            libgmp-dev \
+            pandoc
 
       # NOTE(brad): libunwind-dev is a broken dependency of libgoogle-glog-dev, itself
       # a dependency of ceres. Without this step on jammy, apt-get install libgoogle-glog-dev
@@ -98,19 +98,19 @@ jobs:
 
       - name: Install build dependencies for SymForce benchmarks
         run: |
-            sudo apt-get install -y \
-              libboost-dev \
-              libboost-serialization-dev \
-              libboost-system-dev \
-              libboost-filesystem-dev \
-              libboost-thread-dev \
-              libboost-program-options-dev \
-              libboost-date-time-dev \
-              libboost-timer-dev \
-              libboost-chrono-dev \
-              libboost-regex-dev \
-              libgoogle-glog-dev \
-              libeigen3-dev
+          sudo apt-get install -y \
+            libboost-dev \
+            libboost-serialization-dev \
+            libboost-system-dev \
+            libboost-filesystem-dev \
+            libboost-thread-dev \
+            libboost-program-options-dev \
+            libboost-date-time-dev \
+            libboost-timer-dev \
+            libboost-chrono-dev \
+            libboost-regex-dev \
+            libgoogle-glog-dev \
+            libeigen3-dev
 
       # NOTE(aaron): Some packages do not have a version that supports py3.8..py3.12
       - name: Fix py3.12 versions
@@ -121,9 +121,22 @@ jobs:
           sed -i 's|numpy==1.24.4|numpy~=1.26.0|g' dev_requirements.txt
           sed -i 's|scipy==1.10.1|scipy~=1.12.0|g' dev_requirements.txt
           sed -i 's|pandas==2.0.3|pandas~=2.2.0|g' dev_requirements.txt
+          cp dev_requirements.txt dev_requirements_python312.txt
 
-      - name: Install python dependencies
-        run: pip install -r dev_requirements.txt
+      - name: Install Python dependencies
+        run: |
+          if [[ "${{ matrix.python }}" == "python3.12" ]]; then
+            pip install -r dev_requirements_python312.txt
+          else
+            pip install -r dev_requirements.txt
+          fi
+      - name: Install Python dependencies
+        run: |
+          if [[ "${{ matrix.python }}" == "python3.12" ]]; then
+            pip install -r dev_requirements_python312.txt
+          else
+            pip install -r dev_requirements.txt
+          fi
 
       - name: Run cmake build
         run: |
